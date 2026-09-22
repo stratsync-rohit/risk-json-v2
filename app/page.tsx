@@ -10,12 +10,14 @@ import type { MitigationStep, Risk, RiskDetailItem, RiskMetric, RiskMitigation }
 import { normalizeRisk, riskSchema, toJson } from '@/lib/risk-utils'
 import { Preview } from '@/components/risk-preview'
 import { GenericViewsEditor } from '@/components/risk-builder/generic-views-editor'
+import { CustomizeExistingRisk } from '@/components/risk-builder/customize-existing-risk'
 import { AuthGate, useAuth } from '@/components/auth/AuthGate'
 
 type SectionProps = { title: string; children: React.ReactNode; open?: boolean; badge?: string }
 type ResizeHandleId = 'form-json' | 'json-preview'
 type PanelWidths = { form: number; json: number; preview: number }
 type BuilderMode = 'form' | 'json' | 'database'
+type WorkflowMode = 'create' | 'customize'
 type RiskIdStatus = 'idle' | 'checking' | 'verified' | 'error'
 type DatabaseSaveStatus = 'idle' | 'saving' | 'success' | 'duplicate' | 'error'
 type ActiveRiskStatus = 'draft' | 'existing-database' | 'none'
@@ -425,6 +427,7 @@ function RiskJsonBuilder() {
   const { user, signOut } = useAuth()
   const [risk, setRisk] = useState<Risk>(() => createFreshRiskDraft())
   const [activeRiskStatus, setActiveRiskStatus] = useState<ActiveRiskStatus>('draft')
+  const [workflowMode, setWorkflowMode] = useState<WorkflowMode>('create')
   const [mode, setMode] = useState<BuilderMode>('form')
   const [devMode, setDevMode] = useState(false)
   const [jsonText, setJsonText] = useState(() => toJson(createFreshRiskDraft()))
@@ -1192,7 +1195,23 @@ function RiskJsonBuilder() {
       ? <><Button primary className="cursor-pointer disabled:cursor-not-allowed" disabled={!canUpdateRisk} onClick={() => { void updateDatabaseRisk() }}>{isUpdatingRisk && <Loader2 className="size-3.5 animate-spin" />}{isUpdatingRisk ? 'Updating...' : 'Update Risk'}</Button><Button className="cursor-pointer" disabled={isUpdatingRisk} onClick={cancelEdit}><X className="size-3.5" />Cancel Edit</Button></>
       : <><Button className="cursor-pointer disabled:cursor-not-allowed" disabled={!canAddToDatabase} onClick={() => { void addToDatabase() }}>{databaseSaveStatus === 'saving' && databaseSaveRiskId === risk.risk_id ? <Loader2 className="size-3.5 animate-spin" /> : riskAlreadyInDatabase ? <Check className="size-3.5" /> : <Database className="size-3.5" />}{databaseButtonLabel}</Button><Button className="cursor-pointer disabled:cursor-not-allowed" disabled={isGeneratingRiskId} onClick={resetRisk}>{isGeneratingRiskId ? <RefreshCw className="size-3.5 animate-spin" /> : <RotateCcw className="size-3.5" />}{isGeneratingRiskId ? 'Generating ID…' : 'Reset'}</Button></>
 
-  return <main className="min-h-screen bg-slate-100 text-slate-900"><header className="border-b border-slate-200 bg-white"><div className="mx-auto flex max-w-[1500px] items-center justify-between px-5 py-4 lg:px-8"><div className="flex items-center gap-3"><div className="flex size-9 items-center justify-center overflow-hidden rounded-lg "><Image src="/image.png" alt="StratSync logo" width={36} height={36} className="size-9 object-contain" /></div><div><h1 className="text-lg font-bold tracking-tight">Risk JSON Builder</h1><p className="hidden text-xs text-slate-500 sm:block">By Stratsync.ai</p></div></div><div className="flex items-center gap-2"><label className="hidden cursor-pointer items-center gap-2 text-xs font-medium text-slate-600 md:flex"><input type="checkbox" checked={devMode} onChange={e => setDevMode(e.target.checked)} className="size-4 cursor-pointer accent-slate-900 disabled:cursor-not-allowed" />Developer Mode</label>{headerActions}<ProfileMenu user={user} onSignOut={signOut} /></div></div></header><div className="mx-auto max-w-[1500px] px-5 pb-5 pt-4 lg:px-8 lg:pt-5"><div className="mb-4 flex flex-col gap-4 md:flex-row md:items-end md:justify-between"><div><div className="mb-1 flex items-center gap-2">{saveStatus}</div><h2 className="text-3xl font-bold tracking-tight text-slate-950">Risk JSON Builder</h2></div><div className="flex max-w-full overflow-x-auto rounded-lg border border-slate-200 bg-white p-1 shadow-sm"><button onClick={() => setMode('form')} className={`shrink-0 cursor-pointer rounded-md px-4 py-2 text-xs font-semibold transition-colors duration-200 ease-in-out ${mode === 'form' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}>Form → JSON</button><button onClick={() => setMode('json')} className={`shrink-0 cursor-pointer rounded-md px-4 py-2 text-xs font-semibold transition-colors duration-200 ease-in-out ${mode === 'json' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}>JSON → UI</button><button onClick={() => setMode('database')} className={`shrink-0 cursor-pointer rounded-md px-4 py-2 text-xs font-semibold transition-colors duration-200 ease-in-out ${mode === 'database' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}>Database Risks</button></div></div>{builderContent}</div>{notice && <div className="fixed bottom-5 right-5 flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-3 text-sm font-medium text-white shadow-xl"><Check className="size-4 text-emerald-400" />{notice}</div>}</main>
+  return <main className="min-h-screen bg-slate-100 text-slate-900">
+    <header className="border-b border-slate-200 bg-white"><div className="mx-auto flex max-w-[1500px] items-center justify-between px-5 py-4 lg:px-8"><div className="flex items-center gap-3"><div className="flex size-9 items-center justify-center overflow-hidden rounded-lg "><Image src="/image.png" alt="StratSync logo" width={36} height={36} className="size-9 object-contain" /></div><div><h1 className="text-lg font-bold tracking-tight">Risk JSON Builder</h1><p className="hidden text-xs text-slate-500 sm:block">By Stratsync.ai</p></div></div><div className="flex items-center gap-2">{workflowMode === 'create' && <label className="hidden cursor-pointer items-center gap-2 text-xs font-medium text-slate-600 md:flex"><input type="checkbox" checked={devMode} onChange={e => setDevMode(e.target.checked)} className="size-4 cursor-pointer accent-slate-900 disabled:cursor-not-allowed" />Developer Mode</label>}{workflowMode === 'create' && headerActions}<ProfileMenu user={user} onSignOut={signOut} /></div></div></header>
+    <div className="mx-auto max-w-[1500px] px-5 pb-5 pt-4 lg:px-8 lg:pt-5">
+      <div className="mb-4 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+        <div><div className="mb-1 flex items-center gap-2">{workflowMode === 'create' && saveStatus}</div><h2 className="text-3xl font-bold tracking-tight text-slate-950">Risk JSON Builder</h2></div>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <div className="flex max-w-full overflow-x-auto rounded-lg border border-slate-200 bg-white p-1 shadow-sm">
+            <button type="button" onClick={() => setWorkflowMode('create')} className={`shrink-0 cursor-pointer rounded-md px-4 py-2 text-xs font-semibold transition-colors ${workflowMode === 'create' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}>Create New Risk</button>
+            <button type="button" onClick={() => setWorkflowMode('customize')} className={`shrink-0 cursor-pointer rounded-md px-4 py-2 text-xs font-semibold transition-colors ${workflowMode === 'customize' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}>Customize Existing Risk</button>
+          </div>
+          {workflowMode === 'create' && <div className="flex max-w-full overflow-x-auto rounded-lg border border-slate-200 bg-white p-1 shadow-sm"><button onClick={() => setMode('form')} className={`shrink-0 cursor-pointer rounded-md px-4 py-2 text-xs font-semibold transition-colors duration-200 ease-in-out ${mode === 'form' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}>Form → JSON</button><button onClick={() => setMode('json')} className={`shrink-0 cursor-pointer rounded-md px-4 py-2 text-xs font-semibold transition-colors duration-200 ease-in-out ${mode === 'json' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}>JSON → UI</button><button onClick={() => setMode('database')} className={`shrink-0 cursor-pointer rounded-md px-4 py-2 text-xs font-semibold transition-colors duration-200 ease-in-out ${mode === 'database' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}>Database Risks</button></div>}
+        </div>
+      </div>
+      {workflowMode === 'create' ? builderContent : <CustomizeExistingRisk />}
+    </div>
+    {workflowMode === 'create' && notice && <div className="fixed bottom-5 right-5 flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-3 text-sm font-medium text-white shadow-xl"><Check className="size-4 text-emerald-400" />{notice}</div>}
+  </main>
 }
 
 export default function Page() {

@@ -28,6 +28,44 @@ function canonicalRisk(): Risk {
 }
 
 describe('canonical risk serialization', () => {
+  test('accepts every builder-supported block type and array table rows', () => {
+    const risk = structuredClone(sampleRisk)
+    risk.risk_id = 'RSK-SPVC-YUXR'
+    risk.title = 'INVENTORY REVENUE EXPOSURE'
+    risk.metadata = { source_system: 'builder', threshold: 250000, enabled: true }
+    risk.views = {
+      notification: { blocks: [
+        { type: 'callout', text: 'Revenue exposure' },
+        { type: 'key_value', items: [{ label: 'SKU', value: '21132' }] },
+        { type: 'metrics', items: [{ label: 'Exposure', value: 250000 }] },
+        { type: 'text', text: 'Notification text' },
+      ] },
+      details: { blocks: [
+        { type: 'callout', text: 'Details callout' },
+        { type: 'key_value', items: [{ label: 'Customer', value: 'Northstar' }] },
+        { type: 'table', title: 'Inventory Analysis', columns: ['Metric', 'Current', 'Required', 'Variance'], rows: [['Inventory', '820 units', '610 units', '+210 units']] },
+        { type: 'bullet_list', items: ['One', 'Two'] },
+      ] },
+      mitigation: { blocks: [
+        { type: 'callout', text: 'Mitigation callout' },
+        { type: 'numbered_list', items: ['One', 'Two'] },
+        { type: 'action_list', items: [{ order: 1, title: 'Action' }] },
+        { type: 'divider' },
+        { type: 'text', text: 'Mitigation text' },
+      ] },
+    }
+
+    const normalized = normalizeRisk(risk)
+
+    expect(normalized.views.details.blocks[2]).toMatchObject({
+      type: 'table',
+      title: 'Inventory Analysis',
+      columns: ['Metric', 'Current', 'Required', 'Variance'],
+      rows: [['Inventory', '820 units', '610 units', '+210 units']],
+    })
+    expect(normalized.metadata).toEqual({ source_system: 'builder', threshold: 250000, enabled: true })
+  })
+
   test('does not add legacy detail fields while normalizing canonical drafts', () => {
     const normalized = normalizeRisk({
       ...canonicalRisk(),

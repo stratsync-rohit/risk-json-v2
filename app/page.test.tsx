@@ -474,4 +474,22 @@ describe('Risk JSON Builder canonical form', () => {
       })
     })
   })
+
+  test('keeps the current create draft isolated while visiting destination customization', async () => {
+    const user = userEvent.setup()
+    render(<Page />)
+    await waitFor(() => expect(jsonEditorValue().risk_id).toMatch(/^RSK-/))
+
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Draft that must survive' } })
+    expect(screen.getByRole('button', { name: 'Database Risks' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Add to Database' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Customize Existing Risk' }))
+    expect(screen.getByRole('heading', { name: 'Customize an existing risk' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Add to Database' })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Create New Risk' }))
+    expect(screen.getByLabelText('Title')).toHaveValue('Draft that must survive')
+    expect(screen.getByRole('button', { name: 'Database Risks' })).toBeInTheDocument()
+  })
 })
