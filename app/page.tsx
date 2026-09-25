@@ -138,7 +138,7 @@ function syncAlertFromBasic(nextRisk: Risk): Risk {
 
 function createFreshRiskDraft(riskId = ''): Risk {
   return {
-    schema_version: 2, risk_id: riskId, card_id: '', industry_slug: '', industry_name: '', title: '', severity: '' as Risk['severity'], severity_label: '', subtitle: '', summary: '',
+    schema_version: 2, risk_id: riskId, industry_slug: '', industry_name: '', title: '', severity: '' as Risk['severity'], severity_label: '', subtitle: '', summary: '',
     sender: { name: 'StratSync RRM', source: 'Risk Monitor', risk_id: riskId, timestamp: '', context: '' },
     entity: { type: 'sku', id: '', name: '' },
     views: {
@@ -491,7 +491,7 @@ function RiskJsonBuilder() {
     commitFormRisk({ ...risk, industry_name: value, industry_slug: slugify(value) })
   }
   const handleTitleChange = (value: string) => {
-    commitFormRisk({ ...risk, title: value, card_id: slugify(value), sender: { ...risk.sender, context: createSenderContext(value) } })
+    commitFormRisk({ ...risk, title: value, sender: { ...risk.sender, context: createSenderContext(value) } })
   }
   const updateEntity = (field: 'id' | 'name', value: string) => {
     const entity = { ...risk.entity, [field]: value }

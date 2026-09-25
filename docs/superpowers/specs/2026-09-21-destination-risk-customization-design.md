@@ -65,7 +65,7 @@ The editor uses a Risk-shaped editable draft so the existing generic editor can 
 
 The editor starts from the selected base risk or an existing override representation. On save, a pure helper compares editable draft content with the selected base and returns only changed fields. Nested objects are recursively reduced so unchanged fields inside `views` or `metadata` are omitted. Empty strings, empty arrays, and explicit false values remain when they differ from the base so users can intentionally clear or disable content.
 
-The helper strips protected identity/database fields before producing the payload. Protected keys are `_id`, `id`, `risk_id`, `card_id`, `created_at`, and `updated_at`; `sender.risk_id` is also removed because it is derived identity data. The request body is:
+The helper strips protected identity/database fields before producing the payload. Protected keys are `_id`, `id`, `risk_id`, `created_at`, and `updated_at`; `sender.risk_id` is also removed because it is derived identity data. The request body is:
 
 ```json
 {

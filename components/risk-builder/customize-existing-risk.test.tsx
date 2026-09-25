@@ -23,7 +23,6 @@ function baseRisk(): Risk {
   return {
     schema_version: 2,
     risk_id: 'RSK-1',
-    card_id: 'base-card',
     industry_slug: 'distribution',
     industry_name: 'Distribution',
     title: 'Base Risk Title',

@@ -16,7 +16,7 @@
 - `/resolved` is the only authoritative source for the resolved preview.
 - Recursively diff plain objects; arrays are replacement values and are never item-diffed or item-merged.
 - Never expose, model, log, or store webhook URLs.
-- Strip `_id`, `id`, `risk_id`, `card_id`, `created_at`, `updated_at`, and `sender.risk_id` from override payloads.
+- Strip `_id`, `id`, `risk_id`, `created_at`, `updated_at`, and `sender.risk_id` from override payloads.
 - Preserve existing Create New Risk, Database Risks, local autosave, JSON editor, and Add to Database behavior.
 - Do not add a UI framework or perform unrelated refactoring.
 

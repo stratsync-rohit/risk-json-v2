@@ -11,7 +11,6 @@ function baseRisk(): Risk {
   return {
     schema_version: 2,
     risk_id: 'RSK-BASE-001',
-    card_id: 'base-card',
     industry_slug: 'distribution',
     industry_name: 'Distribution',
     title: 'Base risk',
@@ -80,7 +79,6 @@ describe('buildPartialOverride', () => {
     const base = baseRisk()
     const edited = structuredClone(base)
     edited.risk_id = 'RSK-CHANGED'
-    edited.card_id = 'changed-card'
     edited.created_at = 'changed-created'
     edited.updated_at = 'changed-updated'
     edited.sender.risk_id = 'RSK-CHANGED'
@@ -100,7 +98,6 @@ describe('complete overrides and editor drafts', () => {
 
     expect(complete).not.toHaveProperty('_id')
     expect(complete).not.toHaveProperty('risk_id')
-    expect(complete).not.toHaveProperty('card_id')
     expect(complete).not.toHaveProperty('created_at')
     expect(complete).not.toHaveProperty('updated_at')
     expect(complete.sender).not.toHaveProperty('risk_id')

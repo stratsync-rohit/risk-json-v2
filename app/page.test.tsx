@@ -36,7 +36,6 @@ function mitigationPlan() {
 function populatedDatabaseRisk(riskId = 'RSK-EXISTING-0001') {
   return {
     risk_id: riskId,
-    card_id: 'cover-risk',
     industry_slug: '',
     industry_name: '',
     title: 'Cover Risk',

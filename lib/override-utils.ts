@@ -1,6 +1,6 @@
 import type { Risk } from '@/types/risk'
 
-const protectedKeys = new Set(['_id', 'id', 'risk_id', 'card_id', 'created_at', 'updated_at'])
+const protectedKeys = new Set(['_id', 'id', 'risk_id', 'created_at', 'updated_at'])
 const unchanged = Symbol('unchanged')
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -96,7 +96,6 @@ export function hydrateOverrideDraft(base: Risk, overrides: Record<string, unkno
   const safeOverrides = sanitizeValue(overrides) as Record<string, unknown>
   const hydrated = mergeForEditor(base, safeOverrides) as Risk
   hydrated.risk_id = base.risk_id
-  hydrated.card_id = base.card_id
   hydrated.created_at = base.created_at
   hydrated.updated_at = base.updated_at
   hydrated.sender = { ...hydrated.sender, risk_id: base.risk_id }
@@ -107,7 +106,6 @@ export function createBlankCustomizationDraft(base: Risk): Risk {
   return {
     schema_version: 2,
     risk_id: base.risk_id,
-    card_id: base.card_id,
     industry_slug: '',
     industry_name: '',
     title: '',
